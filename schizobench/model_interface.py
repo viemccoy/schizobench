@@ -109,12 +109,21 @@ class OpenAIInterface(ModelInterface):
             messages.append({"role": "user", "content": prompt})
             
             # Use the new v1.0+ API format
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                max_tokens=2000,
-                temperature=0.7
-            )
+            # Handle o4-mini models that have different requirements
+            kwargs = {
+                "model": self.model_name,
+                "messages": messages
+            }
+            
+            if "o4-mini" in self.model_name:
+                # o4-mini requires max_completion_tokens and only supports temperature=1
+                kwargs["max_completion_tokens"] = 2000
+                # Don't set temperature - use default of 1
+            else:
+                kwargs["max_tokens"] = 2000
+                kwargs["temperature"] = 0.7
+                
+            response = self.client.chat.completions.create(**kwargs)
             
             return response.choices[0].message.content
             

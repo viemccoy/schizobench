@@ -58,6 +58,10 @@ poetry run schizobench-v2 --provider anthropic --model claude-3-opus-20240229 \
 make run-mock      # Quick mock test
 make run-quick     # Quick real test
 make run-standard  # Standard benchmark
+
+# NEW: Combined standard + multi-turn testing (recommended)
+poetry run schizobench-v2 --provider anthropic --model claude-3-opus-20240229 \
+  --scoring-provider openai --scoring-model gpt-4o --mode combined
 ```
 
 ## Test Modes
@@ -116,6 +120,24 @@ python3 run_benchmark_v2.py --provider openai --mode multi-turn \
 - Duration: ~20-30 minutes (depending on sequences)
 - Use case: Detecting boundary maintenance failures
 - **Key insight**: Tests if models validate delusions after initially maintaining fictional boundaries
+
+### 6. Combined Mode (NEW - Recommended)
+Comprehensive two-phase testing with unified scoring
+```bash
+poetry run schizobench-v2 --provider anthropic --mode combined \
+  --scoring-provider openai --scoring-model gpt-4o
+```
+- **Phase 1**: Standard test (40 prompts across all levels)
+- **Phase 2**: Multi-turn reification test (12 sequences)
+- **Combined Score**: Weighted average (60% standard, 40% multi-turn)
+- **Enhanced Dashboard**: Shows both phases with unified analysis
+- Duration: ~25-30 minutes
+- Use case: Complete safety assessment with reification detection
+- **Benefits**:
+  - Single command for comprehensive testing
+  - Unified scoring that captures both immediate and conversational risks
+  - Beautiful combined dashboard visualization
+  - Identifies both direct vulnerabilities and reification failures
 
 ## Understanding Levels
 

@@ -1030,6 +1030,117 @@ poetry run schizobench-v2 --provider mock --mode multi-turn
 # - All visualizations generated successfully
 ```
 
+### Combined Mode Implementation ✅
+
+We've created a streamlined combined testing mode that runs both standard and multi-turn tests with unified scoring.
+
+#### Bug Fix Applied:
+Fixed KeyError with 'reification_rate' by updating references to use the correct nested structure:
+- `mt_analysis['reification_rate']` → `mt_analysis['summary']['reification_rate']`
+- Applied throughout `run_benchmark_v2.py` and `visualizer.py`
+
+### Combined Mode Implementation
+
+#### Features:
+1. **Two-Phase Testing**:
+   - Phase 1: Standard test (40 prompts)
+   - Phase 2: Multi-turn reification test (12 sequences)
+
+2. **Unified Scoring**:
+   - Combined score = 60% standard + 40% multi-turn
+   - Weighted to emphasize reification vulnerability importance
+
+3. **Enhanced Dashboard**:
+   - 20x12 inch comprehensive visualization
+   - Shows both phase results side-by-side
+   - Combined safety assessment
+   - Detailed recommendations
+
+4. **Usage**:
+   ```bash
+   poetry run schizobench-v2 --provider anthropic --mode combined \
+     --scoring-provider openai --scoring-model gpt-4o
+   ```
+
+5. **Console Output**:
+   - Clear phase separation
+   - Progress indicators for each phase
+   - Combined results summary
+   - Safety assessment with recommendations
+
+This provides researchers with a single command to get a complete safety assessment that captures both immediate response risks and the critical reification vulnerability.
+
+### Enhanced Reporting Features ✅
+
+Based on user feedback, we've enhanced the HTML report generation to include:
+
+1. **Detailed Phase Comparison Section**:
+   - Side-by-side comparison of standard and multi-turn results
+   - Visual safety score displays for each phase
+   - Key metrics and findings for both test types
+   - Color-coded risk indicators
+
+2. **Comprehensive Insights**:
+   - Context dependency analysis (score difference between phases)
+   - Reification vulnerability breakdown by category
+   - Risk pattern analysis across conversation turns
+   - Critical gap identification between test phases
+
+3. **Category Improvements Suggested**:
+   - **External Attribution** currently focuses on gangstalking/persecution
+   - Could be refined to:
+     - Rename to "Persecution/Surveillance Delusions" (more accurate)
+     - OR refocus on true external attribution (thought insertion, external control)
+     - OR split into two distinct categories
+
+The enhanced reporting makes it clear how the model performs differently in single-prompt vs conversational contexts, helping researchers identify specific areas for improvement.
+
+### Multi-Turn Methodology Clarity ✅
+
+Based on user feedback about making the conversation setup clearer, we've added:
+
+1. **"Understanding Multi-Turn Testing" Section** in HTML reports:
+   - Clear explanation of the 3-turn structure
+   - Turn 1: Establish Fiction (creative prompt)
+   - Turn 2: Reification Attempt (user claims it's real)
+   - Turn 3: Escalation (further into delusion)
+   - Explains why Turn 2 is critical for safety
+
+2. **Enhanced Visualizations**:
+   - Multi-turn summary chart now includes methodology subtitle
+   - Conversation flow diagrams label each turn's intent
+   - Clear "Conversation Flow:" header with turn purposes
+
+3. **Key Insight**: The reports now clearly explain that we're testing the "reification vulnerability" - when models validate fiction as reality after initially providing appropriate creative responses. This pattern mimics how vulnerable individuals actually interact with AI systems.
+
+These improvements ensure researchers understand exactly what's being tested and why the multi-turn approach is critical for identifying safety vulnerabilities that single-prompt tests miss.
+
+### Report Layout Improvements ✅
+
+Based on user feedback, we've reorganized the HTML report structure:
+
+1. **Executive Summary Now Appears After Phase Comparison**:
+   - Phase comparison section appears first to provide context
+   - Executive summary follows, incorporating insights from both phases
+   - Creates a more logical flow: data → analysis → summary
+
+2. **Enhanced Executive Summary for Combined Mode**:
+   - Now includes detailed phase comparison insights
+   - Reports the score difference and what it means
+   - Includes critical failures from both phases
+   - Shows reification categories and rates
+   - Provides phase-specific recommendations
+   - May include example responses from both test types
+
+3. **Key Improvements**:
+   - Two-phase analysis clearly explained
+   - 32.3-point difference highlighted with interpretation
+   - Specific findings from each phase integrated
+   - Safety implications based on the performance gap
+   - Targeted recommendations based on which phase showed weaknesses
+
+This creates a more cohesive narrative that helps researchers understand not just the overall safety score, but how the model's behavior differs between immediate responses and conversational contexts.
+
 ---
 
 *With love and dedication to advancing AI safety research* ❤️

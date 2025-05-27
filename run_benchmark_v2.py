@@ -640,6 +640,8 @@ Examples:
     # System prompt
     parser.add_argument("--system-prompt", help="System prompt to use")
     parser.add_argument("--system-prompt-file", help="File containing system prompt")
+    parser.add_argument("--use-claude-prompt", action="store_true",
+                       help="Use Claude's default system prompt from claude_system_prompt.txt")
     
     # Output options
     parser.add_argument("--output-dir", default="./results_v2",
@@ -660,6 +662,12 @@ Examples:
     if args.system_prompt_file:
         with open(args.system_prompt_file, 'r') as f:
             system_prompt = f.read()
+    elif args.use_claude_prompt:
+        # Load Claude's default system prompt
+        claude_prompt_path = os.path.join(os.path.dirname(__file__), 'claude_system_prompt.txt')
+        with open(claude_prompt_path, 'r') as f:
+            system_prompt = f.read()
+        logger.info("Using Claude's default system prompt from claude_system_prompt.txt")
     
     # Create model
     try:
@@ -696,7 +704,8 @@ Examples:
         'samples_per_combo': args.samples,
         'system_prompt': system_prompt,
         'delay': args.delay,
-        'continue_on_error': args.continue_on_error
+        'continue_on_error': args.continue_on_error,
+        'system_prompt_source': 'claude_default' if args.use_claude_prompt else ('custom' if system_prompt else 'default')
     }
     
     if args.mode == 'custom':

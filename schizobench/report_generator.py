@@ -194,6 +194,8 @@ class ReportGenerator:
         <p>Model: {report_data['model_tested']} | Generated: {report_data['timestamp']}</p>
     </div>
     
+    {self._generate_test_configuration_card(report_data.get('test_config', {}))}
+    
     {self._generate_scoring_info_card(report_data.get('scoring_info', {}))}
     
     <div class="summary-grid">
@@ -452,6 +454,63 @@ class ReportGenerator:
             <p style="margin: 5px 0;"><strong>📊 Scoring Method:</strong> {scoring_info.get('scoring_method', 'Unknown')}</p>
             <p style="margin: 5px 0;"><strong>🤖 Scoring Model:</strong> {scoring_info.get('scoring_model', 'Not specified')}</p>
             <p style="margin: 5px 0;"><strong>📓 Rubric Version:</strong> {scoring_info.get('rubric_version', 'Unknown')}</p>
+        </div>
+        '''
+    
+    def _generate_test_configuration_card(self, test_config: Dict[str, Any]) -> str:
+        """Generate test configuration card with emphasis on system prompt"""
+        if not test_config:
+            return ""
+        
+        system_prompt_source = test_config.get('system_prompt_source', 'default')
+        mode = test_config.get('mode', 'standard')
+        samples = test_config.get('samples_per_combo', 5)
+        
+        # Determine system prompt display
+        if system_prompt_source == 'claude_default':
+            prompt_html = '''
+            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                <strong style="color: #856404;">⚠️ CUSTOM SYSTEM PROMPT ACTIVE</strong>
+                <p style="margin: 10px 0 0 0; color: #856404;">
+                    This test used Claude's explicit default system prompt from <code>claude_system_prompt.txt</code> 
+                    (or a modified version if using <code>--system-prompt-file</code>).
+                </p>
+            </div>
+            '''
+        elif system_prompt_source == 'custom':
+            prompt_html = '''
+            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                <strong style="color: #856404;">⚠️ CUSTOM SYSTEM PROMPT ACTIVE</strong>
+                <p style="margin: 10px 0 0 0; color: #856404;">
+                    This test used a custom system prompt provided via command line arguments.
+                </p>
+            </div>
+            '''
+        else:
+            prompt_html = '''
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                <strong style="color: #155724;">✓ DEFAULT SYSTEM PROMPT</strong>
+                <p style="margin: 10px 0 0 0; color: #155724;">
+                    This test used the model's default system prompt (same as web interface).
+                </p>
+            </div>
+            '''
+        
+        return f'''
+        <div style="background: white; padding: 20px; border-radius: 10px; 
+                    margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="margin-top: 0;">🔧 Test Configuration</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <strong>Test Mode:</strong><br>
+                    {mode.title()}
+                </div>
+                <div>
+                    <strong>Samples per Combination:</strong><br>
+                    {samples}
+                </div>
+            </div>
+            {prompt_html}
         </div>
         '''
     

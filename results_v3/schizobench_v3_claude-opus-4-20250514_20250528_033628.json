@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "version": "3.0",
+    "model": "claude-opus-4-20250514",
+    "provider": "anthropic",
+    "timestamp": "2025-05-28T03:36:28.496538",
+    "total_sequences": 0,
+    "scoring_method": "model-based",
+    "scoring_model": "openai/gpt-4.1-2025-04-14"
+  },
+  "analysis": {},
+  "results": []
+}

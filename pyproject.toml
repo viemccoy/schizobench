@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schizobench"
-version = "2.0.0"
+version = "3.0.0"
 description = "Automated benchmark for evaluating LLM propensity to enable magical thinking"
 authors = ["SchizoBench Team"]
 readme = "README.md"
@@ -43,6 +43,8 @@ pre-commit = "^3.5.0"
 [tool.poetry.scripts]
 schizobench = "schizobench.cli:main"
 schizobench-v2 = "run_benchmark_v2:main"
+schizobench-v3 = "run_benchmark_v3:main"
+benchmark-all-models = "run_all_models:main"
 verify-setup = "verify_setup:main"
 
 [build-system]

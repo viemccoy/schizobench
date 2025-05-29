@@ -40,7 +40,7 @@ class ModelInterface(ABC):
 class AnthropicInterface(ModelInterface):
     """Interface for Anthropic Claude models"""
     
-    def __init__(self, model_name: str = "claude-opus-4-20250514", api_key: Optional[str] = None):
+    def __init__(self, model_name: str, api_key: Optional[str] = None, temperature: float = 0.7, **kwargs):
         try:
             import anthropic
         except ImportError:
@@ -48,6 +48,7 @@ class AnthropicInterface(ModelInterface):
             
         self.model_name = model_name
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+        self.temperature = temperature
         if not self.api_key:
             raise ValueError("Anthropic API key required")
             
@@ -62,7 +63,7 @@ class AnthropicInterface(ModelInterface):
                 "model": self.model_name,
                 "messages": messages,
                 "max_tokens": 2000,
-                "temperature": 0.7
+                "temperature": self.temperature
             }
             
             if system_prompt:
@@ -86,7 +87,7 @@ class AnthropicInterface(ModelInterface):
 class OpenAIInterface(ModelInterface):
     """Interface for OpenAI models"""
     
-    def __init__(self, model_name: str = "gpt-4", api_key: Optional[str] = None):
+    def __init__(self, model_name: str, api_key: Optional[str] = None, temperature: float = 0.7, **kwargs):
         try:
             from openai import OpenAI
         except ImportError:
@@ -94,6 +95,7 @@ class OpenAIInterface(ModelInterface):
             
         self.model_name = model_name
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.temperature = temperature
         if not self.api_key:
             raise ValueError("OpenAI API key required")
             
@@ -121,7 +123,7 @@ class OpenAIInterface(ModelInterface):
                 # Don't set temperature - use default of 1
             else:
                 kwargs["max_tokens"] = 2000
-                kwargs["temperature"] = 0.7
+                kwargs["temperature"] = self.temperature
                 
             response = self.client.chat.completions.create(**kwargs)
             
@@ -221,9 +223,12 @@ class ModelFactory:
         provider_lower = provider.lower()
         
         if provider_lower in ["anthropic", "claude"]:
-            return AnthropicInterface(model_name or "claude-opus-4-20250514", **kwargs)
+            return AnthropicInterface(model_name or "claude-3-opus", **kwargs)
         elif provider_lower in ["openai", "gpt"]:
-            return OpenAIInterface(model_name or "gpt-4", **kwargs)
+            # Filter kwargs for OpenAI - only pass through what its constructor accepts
+            openai_kwargs = {k: v for k, v in kwargs.items() 
+                          if k in ['api_key', 'temperature', 'base_url']}
+            return OpenAIInterface(model_name or "gpt-4", **openai_kwargs)
         elif provider_lower in ["google", "gemini", "bard"]:
             return GoogleInterface(model_name or "gemini-pro", **kwargs)
         elif provider_lower == "mock":

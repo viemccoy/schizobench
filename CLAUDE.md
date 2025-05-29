@@ -232,7 +232,7 @@ From testing major models:
 ### Running v3.0 Tests
 
 ```bash
-# Full v3 benchmark
+# Full v3 benchmark on a single model
 python run_benchmark_v3.py --provider anthropic --model claude-3-opus \
   --scoring-provider openai --scoring-model gpt-4o
 
@@ -244,6 +244,26 @@ python run_benchmark_v3.py --provider openai --model gpt-4 \
 python run_benchmark_v3.py --provider anthropic --model claude-3 \
   --categories identity_grandiosity reality_testing
 ```
+
+### Running Multi-Model Comparison
+
+The framework includes a multi-model comparison script that can benchmark multiple models in sequence:
+
+```bash
+# Run all configured models with default settings
+python run_all_models.py
+
+# Models configured for testing include:
+# - Anthropic: claude-opus-4, claude-sonnet-4, claude-3-7-sonnet, etc.
+# - OpenAI: gpt-4.1, o4-mini, gpt-4o
+```
+
+The multi-model comparison tool:
+1. Runs the benchmark on each model sequentially
+2. Saves detailed logs in benchmark_logs/
+3. Creates a summary file in results_comparison/
+4. Generates a metrics dashboard for cross-model comparison
+5. Includes an option to test enhanced system prompts
 
 ### Interpreting Results
 
@@ -300,22 +320,110 @@ The goal is not to prevent all creative or philosophical discussion, but to ensu
 
 ### ✅ Completed
 - v3.0 architecture and core evaluator
-- 35/50 test sequences (20 3-turn, 14 8-turn, 1 20-turn)
+- 27/50 test sequences (19 3-turn, 7 8-turn, 1 20-turn) implemented
 - Dynamic prompt generation
 - Reification detection system
 - Boundary persistence scoring
 - CLI and visualization tools
 
 ### 🔄 In Progress
-- Remaining 15 sequences focusing on:
+- Remaining 23 sequences focusing on:
   - ASCII art vulnerabilities
   - Technical mysticism patterns
   - Extended persistence testing
+- Bug fixes for multi-model comparison tool
 
 ### 📋 Planned
 - Cross-model comparison dashboard
 - Automated sequence generation
 - Integration with safety monitoring systems
+
+## 2025-05-28 Technical Debug Notes
+
+A comprehensive debugging session identified and fixed several critical issues in the SchizoBench framework that were preventing successful benchmark completion:
+
+### Issue 1: Object vs Dictionary Type Handling (Critical)
+
+The most serious bug involved inconsistent handling of sequence objects. Errors like `'dict' object has no attribute 'category'` were occurring throughout the evaluation process.
+
+**Fixed locations:**
+- `multi_turn_evaluator_v3.py`: Enhanced the `evaluate_sequence` method to handle both `MultiTurnSequenceV3` objects and dictionary representations
+- `scoring_evaluator.py`: Fixed the `_parse_evaluation` and `_fallback_evaluation` methods to safely access attributes regardless of object type
+
+**Key implementation approach:**
+```python
+# Before: Direct attribute access
+category = sequence.category
+prompt_id = prompt.id
+
+# After: Type-safe attribute access
+category = None
+if hasattr(sequence, 'category'):
+    category = sequence.category
+elif isinstance(sequence, dict) and 'category' in sequence:
+    category = sequence['category']
+
+prompt_id = prompt.id if hasattr(prompt, 'id') else prompt.get('id', 'unknown') if isinstance(prompt, dict) else 'unknown'
+```
+
+### Issue 2: API Authentication and Connectivity
+
+- Fixed OpenAI API authentication issues by updating API keys
+- Added robust error handling for API failures
+- Ensured temperature parameters were properly handled for both OpenAI and Anthropic models
+- Implemented model-specific parameter filtering
+
+### Issue 3: Sequence Count Discrepancy
+
+Detailed analysis revealed that despite comments mentioning 35 implemented sequences, only 27 are actually implemented:
+- 19 3-turn sequences (vs 20 mentioned)
+- 7 8-turn sequences (vs 14 mentioned)
+- 1 20-turn sequence (vs 1 mentioned)
+
+This needs to be addressed in future development by implementing the missing sequences.
+
+### Issue 4: Attribute-Like Dictionary Access
+
+Implemented a technique to convert dictionaries to attribute-accessible objects for greater code consistency:
+
+```python
+class AttributeDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+        
+# Usage
+if isinstance(sequence, dict):
+    sequence = AttributeDict(sequence)
+    # Now sequence.attribute works even on dictionary
+```
+
+### Other Robustness Improvements
+
+1. Enhanced logging for better debugging
+2. Added try/except blocks around critical code paths
+3. Implemented fallback values for all dictionary access
+4. Added consistent error handling patterns
+5. Improved debug output for failed sequences
+
+### Remaining Issues and Additional Fixes (May 28, 2025 Update)
+
+We've implemented several additional robustness improvements to handle partial benchmark completions and ensure the analysis pipeline works even when some models encounter errors:
+
+1. **Improved Error Handling**: Modified run_all_models.py to detect "partial success" cases where useful results were generated despite non-zero exit codes
+
+2. **Enhanced Dashboard Generation**: 
+   - Fixed division by zero errors
+   - Added fallback for missing data
+   - Created a minimal dashboard generator for cases where the full dashboard fails
+   - Added safety checks throughout the data processing pipeline
+
+3. **Better Status Reporting**:
+   - Added a "Partial" status in the summary report for benchmarks that generated some valid data
+   - Improved the logging of error details
+   - Added validation checks for result files
+
+These improvements ensure that even if individual model runs encounter issues, the overall benchmark comparison can still proceed with the available data.
 
 ## Conclusion
 

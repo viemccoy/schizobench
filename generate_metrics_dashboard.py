@@ -3,6 +3,7 @@
 
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Tuple
@@ -16,7 +17,7 @@ def load_json_results(json_path: str) -> Dict[str, Any]:
 
 def extract_model_name(filename: str) -> str:
     """Extract clean model name from filename."""
-    match = re.search(r'v2_(.+?)_\d{8}_\d{6}', filename)
+    match = re.search(r'v3_(.+?)_\d{8}_\d{6}', filename)
     if match:
         return match.group(1)
     return "unknown"
@@ -602,13 +603,25 @@ def generate_dashboard_html(results_data: List[Dict[str, Any]]) -> str:
 """
     
     # Calculate aggregate metrics
-    total_tests = sum(r['total_tests'] for r in results_data)
-    total_critical = sum(r['critical_failures'] for r in results_data)
-    avg_safety_score = sum(r['overall_score'] for r in results_data) / len(results_data)
+    total_tests = sum(r.get('total_tests', 0) for r in results_data)
+    total_critical = sum(r.get('critical_failures', 0) for r in results_data)
     
-    # Find best and worst performers
-    best_model = max(results_data, key=lambda x: x['overall_score'])
-    worst_model = min(results_data, key=lambda x: x['overall_score'])
+    # Handle empty results safely
+    if results_data and all('overall_score' in r for r in results_data):
+        avg_safety_score = sum(r['overall_score'] for r in results_data) / len(results_data)
+        
+        # Find best and worst performers
+        best_model = max(results_data, key=lambda x: x['overall_score'])
+        best_model_score = f"{best_model['overall_score']:.1f}%"
+        best_model_name = best_model.get('display_name', 'Unknown')
+        
+        worst_model = min(results_data, key=lambda x: x['overall_score'])
+    else:
+        avg_safety_score = 0.0
+        best_model = {'overall_score': 0.0, 'display_name': 'No data'}
+        best_model_score = "N/A"
+        best_model_name = "No data"
+        worst_model = {'overall_score': 0.0, 'display_name': 'No data'}
     
     # Aggregate metrics cards
     html += f"""
@@ -621,20 +634,20 @@ def generate_dashboard_html(results_data: List[Dict[str, Any]]) -> str:
             
             <div class="metric-card">
                 <div class="metric-title">Average Safety Score</div>
-                <div class="metric-value">{avg_safety_score:.1f}%</div>
+                <div class="metric-value">{f"{avg_safety_score:.1f}%" if avg_safety_score is not None else "N/A"}</div>
                 <div class="metric-subtitle">Higher is safer</div>
             </div>
             
             <div class="metric-card">
                 <div class="metric-title">Critical Failures</div>
                 <div class="metric-value">{total_critical}</div>
-                <div class="metric-subtitle">{(total_critical/total_tests*100):.1f}% of all tests</div>
+                <div class="metric-subtitle">{f"{(total_critical/total_tests*100):.1f}" if total_tests > 0 else "0.0"}% of all tests</div>
             </div>
             
             <div class="metric-card">
                 <div class="metric-title">Best Performer</div>
-                <div class="metric-value">{best_model['overall_score']:.1f}%</div>
-                <div class="metric-subtitle">{best_model['display_name']}</div>
+                <div class="metric-value">{best_model_score}</div>
+                <div class="metric-subtitle">{best_model_name}</div>
             </div>
         </div>
 """
@@ -981,7 +994,7 @@ def generate_dashboard_html(results_data: List[Dict[str, Any]]) -> str:
     html += f"""
         <div class="footer">
             <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-            <p>SchizoBench v2.0 - Advancing AI Safety Through Comprehensive Testing</p>
+            <p>SchizoBench v3.0 - Advancing AI Safety Through Multi-Turn Testing</p>
         </div>
     </div>
 </body>
@@ -992,13 +1005,17 @@ def generate_dashboard_html(results_data: List[Dict[str, Any]]) -> str:
 
 def main():
     """Generate metrics dashboard from all available results."""
-    results_dir = Path("/mnt/c/Users/vie/documents/schizobench/results_v2")
+    results_dir = Path("results_v3")
     
     # Find all JSON result files
-    json_files = list(results_dir.glob("schizobench_v2_*.json"))
-    json_files = [f for f in json_files if not f.name.endswith('_multi_turn.json')]
+    json_files = list(results_dir.glob("schizobench_v3_*.json"))
     
     print(f"Found {len(json_files)} result files to analyze")
+    
+    if not json_files:
+        print("No result files found. Please run benchmarks first.")
+        print(f"Looking in directory: {results_dir}")
+        sys.exit(1)
     
     results_data = []
     
@@ -1076,7 +1093,8 @@ def main():
     dashboard_html = generate_dashboard_html(results_data)
     
     # Save dashboard
-    dashboard_path = results_dir / "schizobench_metrics_dashboard.html"
+    os.makedirs("dashboards", exist_ok=True)
+    dashboard_path = Path("dashboards") / f"schizobench_v3_dashboard_{datetime.now().strftime('%Y%m%d')}.html"
     with open(dashboard_path, 'w') as f:
         f.write(dashboard_html)
     
@@ -1085,7 +1103,10 @@ def main():
     print(f"\nSummary:")
     print(f"- Models analyzed: {len(results_data)}")
     print(f"- Total tests: {sum(r['total_tests'] for r in results_data):,}")
-    print(f"- Average safety score: {sum(r['overall_score'] for r in results_data) / len(results_data):.1f}%")
+    if results_data:
+        print(f"- Average safety score: {sum(r['overall_score'] for r in results_data) / len(results_data):.1f}%")
+    else:
+        print("- Average safety score: N/A (no valid results)")
 
 if __name__ == "__main__":
     main()

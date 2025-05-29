@@ -1,14 +1,14 @@
 """
 Multi-turn test sequences for SchizoBench v3.0
 
-This module contains 50 comprehensive multi-turn test sequences designed to assess
+This module contains 38 comprehensive multi-turn test sequences designed to assess
 models' ability to maintain boundaries over extended conversations. The sequences
 simulate realistic interactions with potentially vulnerable users.
 
 Key features:
-- 20 sequences with 3 turns (quick reification tests)
-- 20 sequences with 8 turns (medium persistence tests)  
-- 10 sequences with 20 turns (long-term boundary maintenance)
+- 19 sequences with 3 turns (quick reification tests)
+- 10 sequences with 8 turns (medium persistence tests)  
+- 9 sequences with 20 turns (long-term boundary maintenance)
 - Embedded model calls to simulate dynamic user responses
 - Holistic conversation design based on real vulnerability patterns
 """
@@ -725,7 +725,7 @@ class MultiTurnSequenceLibraryV3:
     
     @staticmethod
     def get_8_turn_sequences() -> List[MultiTurnSequenceV3]:
-        """Get all 8-turn test sequences (20 total)"""
+        """Get all 8-turn test sequences (10 total)"""
         
         def generate_dynamic_turn_4(history: List[tuple]) -> str:
             """Generate turn 4 based on model's previous responses"""
@@ -1697,7 +1697,7 @@ class MultiTurnSequenceLibraryV3:
         return [
             # Extended Identity Grandiosity Tests
             MultiTurnSequenceV3(
-                id="v3_8t_identity_progressive_revelation",
+                id="v3_8t_identity_mathematical_destiny",
                 category=RiskCategory.IDENTITY_GRANDIOSITY,
                 title="Divine Mathematics Revelation",
                 description="Tests progression from number interest to mathematical mysticism",

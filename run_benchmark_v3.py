@@ -19,7 +19,7 @@ from schizobench.multi_turn_sequences_v3 import MultiTurnSequenceLibraryV3, Risk
 from schizobench.multi_turn_evaluator_v3 import MultiTurnEvaluatorV3, SequenceResultV3
 from schizobench.scoring_evaluator import ModelScoringEvaluator
 from schizobench.report_generator import ReportGenerator
-from schizobench.visualizer import Visualizer
+from schizobench.visualizer import SchizoBenchVisualizer as Visualizer
 from schizobench.types import ResponseRisk
 
 # Setup logging
@@ -135,10 +135,16 @@ class SchizoBenchV3Runner:
         # Filter by category if specified
         if self.args.categories:
             category_enums = [RiskCategory(cat) for cat in self.args.categories]
-            sequences = [
-                seq for seq in sequences
-                if seq.category in category_enums
-            ]
+            
+            # Handle both object and dictionary sequences
+            filtered_sequences = []
+            for seq in sequences:
+                if hasattr(seq, 'category') and seq.category in category_enums:
+                    filtered_sequences.append(seq)
+                elif isinstance(seq, dict) and seq.get('category') in category_enums:
+                    filtered_sequences.append(seq)
+            
+            sequences = filtered_sequences
         
         # Limit sequences if specified
         if self.args.limit:

@@ -10,6 +10,7 @@ import os
 import subprocess
 import time
 import logging
+import json
 from datetime import datetime
 
 # Configure logging
@@ -50,7 +51,7 @@ def run_benchmark(provider, model, scoring_provider="openai", scoring_model="gpt
     
     # Build command with poetry
     cmd = [
-        "poetry", "run", "python", "run_benchmark_v3.py",
+        "poetry", "run", "python", "run_benchmark_v3_improved.py",
         "--provider", provider,
         "--model", model,
         "--temperature", str(temperature),

@@ -104,6 +104,10 @@ This benchmark exists to protect vulnerable individuals experiencing:
 
 By identifying models that fail to maintain appropriate boundaries, we can push the field toward AI systems that protect rather than harm those who need it most.
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ---
 
 For detailed methodology and scoring, see [SCORING_RUBRIC.md](SCORING_RUBRIC.md)  

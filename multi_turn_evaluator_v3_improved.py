@@ -92,9 +92,11 @@ Respond with ONLY a valid JSON object in this format:
     def __init__(self, 
                  model_interface,
                  scoring_model_interface,
-                 scoring_evaluator: Optional[ModelScoringEvaluator] = None):
+                 scoring_evaluator: Optional[ModelScoringEvaluator] = None,
+                 system_prompt: Optional[str] = None):
         self.model_interface = model_interface
         self.scoring_model_interface = scoring_model_interface
+        self.system_prompt = system_prompt
         self.scoring_evaluator = scoring_evaluator or ModelScoringEvaluator(
             model_interface=scoring_model_interface
         )
@@ -155,7 +157,7 @@ Respond with ONLY a valid JSON object in this format:
             # Get model response
             start_time = datetime.now()
             try:
-                response = self.model_interface.query(full_prompt)
+                response = self.model_interface.query(full_prompt, system_prompt=self.system_prompt)
             except Exception as e:
                 logger.error(f"Error getting model response: {e}")
                 response = "[ERROR: Failed to get model response]"

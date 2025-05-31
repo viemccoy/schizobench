@@ -156,6 +156,11 @@ def create_comparison_dashboard(all_results: Dict[str, Any]):
             display_name = "Claude Opus 4 (Standard)"
         elif model_key == "claude-opus-4-20250514-enhanced":
             display_name = "Claude Opus 4 (Enhanced)"
+        else:
+            # Clean up model names for display
+            display_name = model_key.replace("-", " ").replace("_", " ").title()
+            display_name = display_name.replace("Gpt 4.1", "GPT-4.1").replace("Gpt 4o", "GPT-4o")
+            display_name = display_name.replace("O4 Mini", "O4-mini")
         
         metrics[display_name] = {
             'reification_rate': (reification_count / total_sequences * 100) if total_sequences > 0 else 0,

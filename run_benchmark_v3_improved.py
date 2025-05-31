@@ -36,6 +36,9 @@ class SchizoBenchV3Runner:
         self.results_dir = args.results_dir
         os.makedirs(self.results_dir, exist_ok=True)
         
+        # Store system prompt
+        self.system_prompt = args.system_prompt
+        
         # Initialize model interface
         self.model = ModelFactory.create(
             provider=args.provider,
@@ -58,6 +61,7 @@ class SchizoBenchV3Runner:
         self.multi_turn_evaluator = MultiTurnEvaluatorV3(
             model_interface=self.model,
             scoring_model_interface=self.scoring_model,
+            system_prompt=self.system_prompt,
             scoring_evaluator=self.scoring_evaluator
         )
         

@@ -40,27 +40,48 @@ MODELS_TO_TEST = [
     {"provider": "anthropic", "model": "claude-3-opus-20240229", "retries": 3},
     {"provider": "anthropic", "model": "claude-3-sonnet-20240229", "retries": 3},
     
+    # Claude Opus 4 with enhanced prompt
+    {"provider": "anthropic", "model": "claude-opus-4-20250514", "retries": 3, "enhanced_prompt": True},
+    
     # OpenAI models
     {"provider": "openai", "model": "gpt-4.1-2025-04-14", "retries": 3},
     {"provider": "openai", "model": "o4-mini-2025-04-16", "retries": 3, "temperature": 1.0},
     {"provider": "openai", "model": "gpt-4o-2024-08-06", "retries": 3},
 ]
 
-def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_retries=3):
+def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_retries=3, enhanced_prompt=False):
     """Run benchmark for a single model with retry logic"""
     
     model_str = model.replace(".", "-")
     logger.info(f"Starting benchmark for {provider}/{model} (attempt {retry_count + 1}/{max_retries})")
+    if enhanced_prompt:
+        logger.info("Using enhanced system prompt")
     
     try:
+        # Build command directly instead of using environment vars
+        cmd = [
+            "poetry", "run", "python", "run_benchmark_v3_improved.py",
+            "--provider", provider,
+            "--model", model,
+            "--temperature", str(temperature),
+            "--scoring-provider", "openai",
+            "--scoring-model", "gpt-4.1-2025-04-14"
+        ]
+        
+        # Add enhanced prompt if needed
+        if enhanced_prompt:
+            enhanced_prompt_path = os.path.join("archive", "claude_system_prompt_enhanced.txt")
+            if os.path.exists(enhanced_prompt_path):
+                with open(enhanced_prompt_path, "r") as f:
+                    prompt_content = f.read().strip()
+                cmd.extend(["--system-prompt", prompt_content])
+            else:
+                logger.error(f"Enhanced prompt file not found at {enhanced_prompt_path}")
+                return False
+        
         # Run the benchmark
         result = subprocess.run(
-            ["python", "run_all_models.py"],
-            env={**os.environ, 
-                 "BENCHMARK_SINGLE_MODEL": "true",
-                 "BENCHMARK_PROVIDER": provider,
-                 "BENCHMARK_MODEL": model,
-                 "BENCHMARK_TEMPERATURE": str(temperature)},
+            cmd,
             capture_output=True,
             text=True,
             timeout=7200  # 2 hour timeout per model
@@ -82,7 +103,7 @@ def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_re
                 wait_time = 30 * (retry_count + 1)  # Exponential backoff
                 logger.info(f"Waiting {wait_time}s before retry...")
                 time.sleep(wait_time)
-                return run_single_benchmark(provider, model, temperature, retry_count + 1, max_retries)
+                return run_single_benchmark(provider, model, temperature, retry_count + 1, max_retries, enhanced_prompt)
             
             return False
             
@@ -139,16 +160,26 @@ def main():
         model = config["model"]
         temperature = config.get("temperature", 0.7)
         max_retries = config.get("retries", 3)
+        enhanced_prompt = config.get("enhanced_prompt", False)
         
-        success = run_single_benchmark(provider, model, temperature, max_retries=max_retries)
+        success = run_single_benchmark(provider, model, temperature, max_retries=max_retries, enhanced_prompt=enhanced_prompt)
         
         if success:
             if check_partial_results(model.replace(".", "-")):
-                successful.append(f"{provider}/{model}")
+                if enhanced_prompt:
+                    successful.append(f"{provider}/{model} (enhanced)")
+                else:
+                    successful.append(f"{provider}/{model}")
             else:
-                partial.append(f"{provider}/{model}")
+                if enhanced_prompt:
+                    partial.append(f"{provider}/{model} (enhanced)")
+                else:
+                    partial.append(f"{provider}/{model}")
         else:
-            failed.append(f"{provider}/{model}")
+            if enhanced_prompt:
+                failed.append(f"{provider}/{model} (enhanced)")
+            else:
+                failed.append(f"{provider}/{model}")
         
         # Brief pause between models
         if i < total_models:
@@ -182,8 +213,21 @@ def main():
     if successful or partial:
         logger.info("\nGenerating dashboard...")
         try:
-            subprocess.run(["python", "generate_v3_dashboard_enhanced.py"], check=True)
-            logger.info("✓ Dashboard generated successfully")
+            # Try comparison dashboard first (if we have enhanced prompt results)
+            result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_comparison.py"], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0:
+                logger.info("✓ Comparison dashboard generated successfully")
+                logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comparison.html")
+            else:
+                logger.info("Comparison dashboard not available, trying standard dashboard...")
+                # Fall back to standard dashboard
+                result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_dark.py"], 
+                                      capture_output=True, text=True)
+                if result.returncode == 0:
+                    logger.info("✓ Standard dashboard generated successfully")
+                else:
+                    logger.warning("✗ Dashboard generation failed - run manually later")
         except:
             logger.warning("✗ Dashboard generation failed - run manually later")
     

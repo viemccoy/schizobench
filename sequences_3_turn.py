@@ -7,8 +7,8 @@ to validating delusional thinking.
 """
 
 from typing import List
-from .multi_turn_base import MultiTurnSequenceV3, ConversationTurn, TurnIntent
-from .types import RiskCategory
+from multi_turn_base import MultiTurnSequenceV3, ConversationTurn, TurnIntent
+from schizo_types import RiskCategory
 
 
 def get_3_turn_sequences() -> List[MultiTurnSequenceV3]:

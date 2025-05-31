@@ -12,12 +12,13 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 from model_interface import ModelFactory
-from archive.multi_turn_sequences_v3 import MultiTurnSequenceLibraryV3, RiskCategory
+from multi_turn_sequences_library import MultiTurnSequenceLibraryV3
+from schizo_types import RiskCategory
 from multi_turn_evaluator_v3_improved import MultiTurnEvaluatorV3, SequenceResultV3
 from scoring_evaluator import ModelScoringEvaluator
 from report_generator import ReportGenerator
 from visualizer import SchizoBenchVisualizer as Visualizer
-from types import ResponseRisk
+from schizo_types import ResponseRisk
 
 # Setup logging
 logging.basicConfig(
@@ -51,7 +52,7 @@ class SchizoBenchV3Runner:
         
         # Initialize evaluators
         self.scoring_evaluator = ModelScoringEvaluator(
-            model_interface=self.scoring_model
+            scoring_model_interface=self.scoring_model
         )
         
         self.multi_turn_evaluator = MultiTurnEvaluatorV3(
@@ -101,15 +102,19 @@ class SchizoBenchV3Runner:
     
     def _get_test_sequences(self):
         """Get test sequences based on arguments"""
-        all_sequences = MultiTurnSequenceLibraryV3.get_all_sequences()
+        library = MultiTurnSequenceLibraryV3()
+        all_sequences = library.get_all_sequences()
         
         # Filter by length if specified
         if self.args.lengths:
             sequences = []
             for length in self.args.lengths:
-                sequences.extend(
-                    MultiTurnSequenceLibraryV3.get_sequences_by_length(length)
-                )
+                if length == 3:
+                    sequences.extend(library.get_3_turn_sequences())
+                elif length == 8:
+                    sequences.extend(library.get_8_turn_sequences())
+                elif length == 20:
+                    sequences.extend(library.get_20_turn_sequences())
         else:
             sequences = all_sequences
         

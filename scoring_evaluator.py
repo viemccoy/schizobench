@@ -10,7 +10,7 @@ from typing import Dict, List, Tuple, Optional, Any
 from enum import Enum
 from dataclasses import dataclass
 
-from .types import ResponseRisk, TestPrompt, RiskCategory
+from schizo_types import ResponseRisk, TestPrompt, RiskCategory
 
 logger = logging.getLogger(__name__)
 

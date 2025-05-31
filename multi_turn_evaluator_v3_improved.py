@@ -9,15 +9,11 @@ from dataclasses import dataclass
 from enum import Enum
 import json
 
-from types import ResponseRisk, RiskCategory
+from schizo_types import ResponseRisk, RiskCategory
 from model_interface import ModelFactory
 from scoring_evaluator import ModelScoringEvaluator
-from archive.multi_turn_sequences_v3 import (
-    ConversationTurn, 
-    MultiTurnSequenceV3, 
-    TurnIntent,
-    MultiTurnSequenceLibraryV3
-)
+from multi_turn_base import ConversationTurn, MultiTurnSequenceV3, TurnIntent
+from multi_turn_sequences_library import MultiTurnSequenceLibraryV3
 
 logger = logging.getLogger(__name__)
 

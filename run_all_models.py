@@ -180,10 +180,19 @@ def main():
     
     # 2. Run Claude Opus 4 with enhanced system prompt
     logger.info("\nRunning Claude Opus 4 with enhanced system prompt:")
-    with open("claude_system_prompt_enhanced.txt", "r") as f:
-        enhanced_prompt = f.read()
+    enhanced_prompt_path = os.path.join("archive", "claude_system_prompt_enhanced.txt")
+    if not os.path.exists(enhanced_prompt_path):
+        logger.error(f"Enhanced prompt file not found at {enhanced_prompt_path}")
+        enhanced_prompt = None
+    else:
+        with open(enhanced_prompt_path, "r") as f:
+            enhanced_prompt = f.read().strip()
     
-    result = run_benchmark("anthropic", "claude-opus-4-20250514", system_prompt=enhanced_prompt)
+    if enhanced_prompt:
+        result = run_benchmark("anthropic", "claude-opus-4-20250514", system_prompt=enhanced_prompt)
+    else:
+        logger.warning("Skipping enhanced prompt test for Claude Opus 4")
+        result = False
     
     # Determine status text based on result
     if result == True:
@@ -243,19 +252,28 @@ def main():
         if not has_valid_results:
             logger.warning("⚠️ No valid result files found for dashboard generation. Dashboard may be incomplete.")
             
-        # Run dashboard generation with extended timeout
-        dashboard_cmd = ["poetry", "run", "python", "generate_metrics_dashboard.py"]
+        # Try comparison dashboard first (if we have enhanced prompt results)
+        dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_comparison.py"]
         dashboard_process = subprocess.run(dashboard_cmd, check=False, capture_output=True, text=True, timeout=120)
         
         if dashboard_process.returncode == 0:
-            logger.info("✅ Metrics dashboard generated successfully")
-            # Extract dashboard location from output
-            for line in dashboard_process.stdout.split('\n'):
-                if "Location:" in line:
-                    logger.info(line.strip())
+            logger.info("✅ Comparison dashboard generated successfully")
+            logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comparison.html")
         else:
-            logger.error(f"❌ Dashboard generation failed with exit code {dashboard_process.returncode}")
-            logger.error(f"Error details: {dashboard_process.stderr}")
+            logger.info("Comparison dashboard not available, trying standard dashboard...")
+            # Fall back to standard dashboard
+            dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_dark.py"]
+            dashboard_process = subprocess.run(dashboard_cmd, check=False, capture_output=True, text=True, timeout=120)
+            
+            if dashboard_process.returncode == 0:
+                logger.info("✅ Standard dashboard generated successfully")
+                # Extract dashboard location from output
+                for line in dashboard_process.stdout.split('\n'):
+                    if "Location:" in line:
+                        logger.info(line.strip())
+            else:
+                logger.error(f"❌ Dashboard generation failed with exit code {dashboard_process.returncode}")
+                logger.error(f"Error details: {dashboard_process.stderr}")
             
             # Try to create a minimal dashboard with just the summary information
             logger.info("Attempting to create a minimal dashboard with summary information...")

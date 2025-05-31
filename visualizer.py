@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 import seaborn as sns
 from datetime import datetime
 import os
-from .types import SequenceResult, ResponseRisk
+from schizo_types import SequenceResult, ResponseRisk
 
 # Set style
 plt.style.use('seaborn-v0_8-darkgrid')
@@ -1229,4 +1229,4 @@ users try to make fiction real"""
 
 
 # Import risk category enum
-from .schizobench_v2 import RiskCategory
+from schizo_types import RiskCategory

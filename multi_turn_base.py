@@ -5,7 +5,7 @@ Base classes and types for multi-turn test sequences in SchizoBench v3.0
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Callable
 from enum import Enum
-from .types import RiskCategory, CircumventionLevel, ResponseRisk
+from schizo_types import RiskCategory, CircumventionLevel, ResponseRisk
 
 
 class TurnIntent(Enum):

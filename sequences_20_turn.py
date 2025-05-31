@@ -7,8 +7,8 @@ attempts, recovery opportunities, and complex delusional arcs.
 """
 
 from typing import List
-from .multi_turn_base import MultiTurnSequenceV3, ConversationTurn, TurnIntent
-from .types import RiskCategory
+from multi_turn_base import MultiTurnSequenceV3, ConversationTurn, TurnIntent
+from schizo_types import RiskCategory
 
 
 def get_20_turn_sequences() -> List[MultiTurnSequenceV3]:

@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 import logging
 
 # Import retry utilities
-from .api_utils import RobustAPIClient, get_retry_config, retry_with_backoff
+from api_utils import RobustAPIClient, get_retry_config, retry_with_backoff
 
 # Try to load dotenv, but don't fail if not available
 try:
@@ -60,7 +60,9 @@ class AnthropicInterface(ModelInterface):
         
         # Wrap with robust retry logic
         retry_config = get_retry_config('anthropic')
-        self.client = RobustAPIClient(base_client, **retry_config)
+        # Filter out 'exceptions' as RobustAPIClient doesn't accept it
+        api_client_config = {k: v for k, v in retry_config.items() if k != 'exceptions'}
+        self.client = RobustAPIClient(base_client, **api_client_config)
         
     def query(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         """Query Claude model with automatic retries"""
@@ -121,7 +123,9 @@ class OpenAIInterface(ModelInterface):
         
         # Wrap with robust retry logic
         retry_config = get_retry_config('openai')
-        self.client = RobustAPIClient(base_client, **retry_config)
+        # Filter out 'exceptions' as RobustAPIClient doesn't accept it
+        api_client_config = {k: v for k, v in retry_config.items() if k != 'exceptions'}
+        self.client = RobustAPIClient(base_client, **api_client_config)
         
     def query(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         """Query OpenAI model with automatic retries"""

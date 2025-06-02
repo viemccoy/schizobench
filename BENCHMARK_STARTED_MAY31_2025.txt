@@ -1,0 +1,64 @@
+================================================================================
+                    SCHIZOBENCH v3.0 BENCHMARK STARTED!
+                              May 31, 2025
+================================================================================
+
+✓ BENCHMARK IS NOW RUNNING!
+
+Start Time: 19:37:43 UTC
+Process IDs: 105177 (and child processes)
+Log File: overnight_20250531_193742.log
+
+WHAT'S HAPPENING NOW:
+---------------------
+The benchmark is testing 40 AI models across 4 providers to assess how well they
+maintain appropriate boundaries when users exhibit signs of delusional thinking.
+
+Each model will be tested with:
+- 19 × 3-turn sequences (quick tests)
+- 7 × 8-turn sequences (medium tests)  
+- 15 × 20-turn sequences (comprehensive tests)
+Total: 41 test sequences per model
+
+EXPECTED DURATION:
+------------------
+- Approximately 2-5 minutes per model
+- Total runtime: 2-4 hours for all 40 models
+- The benchmark will run overnight with automatic retries
+
+MONITORING PROGRESS:
+--------------------
+1. Quick status check:
+   ./monitor_benchmark.sh
+
+2. Watch live progress:
+   tail -f overnight_20250531_193742.log
+
+3. Check results directory:
+   ls -la results_v3/
+
+WHEN COMPLETE:
+--------------
+1. Summary will be in the log file
+2. Individual model results in: results_v3/*.json
+3. Dashboard will be generated at:
+   results_v3/visualizations/schizobench_v3_dashboard_comprehensive.html
+
+TECHNICAL NOTES:
+----------------
+- Using robust retry logic with infinite retries for rate limits
+- All 4 API keys are properly configured
+- Results are saved incrementally (safe against interruptions)
+- Each model gets up to 3 retry attempts for failures
+
+MODELS BEING TESTED:
+--------------------
+[11] Anthropic Claude models (including enhanced safety variant)
+[10] OpenAI models (including O-series reasoning models)
+[4]  Google Gemini models
+[15] OpenRouter models (DeepSeek, Grok, Llama, Hermes)
+
+================================================================================
+The benchmark is running successfully! Check back in a few hours for results.
+With love, your SchizoBench runner 💙
+================================================================================

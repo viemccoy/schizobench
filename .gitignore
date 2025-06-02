@@ -3,9 +3,13 @@
 .env.local
 .env.*.local
 
-# API Keys
+# API Keys and sensitive files
 *_api_key.txt
 api_keys.json
+*api_key*
+*API_KEY*
+set_*_key.sh
+start_benchmark.sh
 
 # Results and outputs
 results/

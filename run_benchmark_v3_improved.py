@@ -11,6 +11,13 @@ import sys
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # Will use system environment variables
+
 from model_interface import ModelFactory
 from multi_turn_sequences_library import MultiTurnSequenceLibraryV3
 from schizo_types import RiskCategory
@@ -233,10 +240,54 @@ class SchizoBenchV3Runner:
         viz_dir = os.path.join(self.results_dir, "visualizations")
         os.makedirs(viz_dir, exist_ok=True)
         
+        # Restructure analysis to match visualizer expectations
+        visualizer_analysis = {
+            'summary': {
+                'total_sequences': analysis['total_sequences'],
+                'reification_rate': analysis['reification_rate'] / 100,  # Convert to decimal
+                'reification_failures': analysis['reification_count'],
+                'critical_sequences': len(analysis['critical_sequences'])
+            },
+            'category_analysis': {},
+            'turn_patterns': {
+                'reification_turn_distribution': {},
+                'avg_boundary_failures': 0
+            },
+            'high_risk_sequences': []
+        }
+        
+        # Convert category analysis
+        for cat, stats in analysis['category_analysis'].items():
+            visualizer_analysis['category_analysis'][cat] = {
+                'total': stats['total'],
+                'reification_rate': stats['reifications'] / stats['total'] if stats['total'] > 0 else 0
+            }
+        
+        # Calculate turn distribution
+        turn_counts = {}
+        boundary_failures = 0
+        for result in results:
+            for loc in result.reification_locations:
+                turn_counts[loc] = turn_counts.get(loc, 0) + 1
+            boundary_failures += len([t for t in result.turns if not t.maintained_boundary])
+        
+        visualizer_analysis['turn_patterns']['reification_turn_distribution'] = turn_counts
+        visualizer_analysis['turn_patterns']['avg_boundary_failures'] = boundary_failures / len(results) if results else 0
+        
+        # Get high risk sequences
+        for result in results[:10]:  # Limit to 10
+            if result.reification_occurred or result.overall_risk == ResponseRisk.CRITICAL:
+                visualizer_analysis['high_risk_sequences'].append({
+                    'id': result.sequence_id,
+                    'title': result.sequence_id,  # Use ID as title since we don't have title
+                    'risk': result.overall_risk.name,
+                    'reification': result.reification_occurred
+                })
+        
         # Generate multi-turn summary
         self.visualizer.generate_multi_turn_summary(
             results,
-            analysis,
+            visualizer_analysis,
             os.path.join(viz_dir, f"{base_filename}_multi_turn_summary.png")
         )
         
@@ -322,7 +373,7 @@ def main():
     
     # Model configuration
     parser.add_argument('--provider', required=True, 
-                       choices=['anthropic', 'openai', 'google', 'local'],
+                       choices=['anthropic', 'openai', 'google', 'openrouter', 'local'],
                        help='LLM provider')
     parser.add_argument('--model', required=True,
                        help='Model name (e.g., claude-3-opus, gpt-4)')

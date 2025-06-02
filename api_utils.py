@@ -219,6 +219,18 @@ PROVIDER_RETRY_CONFIGS = {
         'max_delay': 60.0,
         'exceptions': (Exception,)  # OpenAI SDK exceptions
     },
+    'google': {
+        'max_attempts': 5,
+        'base_delay': 2.0,
+        'max_delay': 120.0,  # Google can have longer delays
+        'exceptions': (Exception,)  # Google SDK exceptions
+    },
+    'openrouter': {
+        'max_attempts': 5,
+        'base_delay': 1.5,
+        'max_delay': 120.0,  # OpenRouter can have longer delays
+        'exceptions': (Exception,)  # OpenAI SDK exceptions (used by OpenRouter)
+    },
     'default': {
         'max_attempts': 5,
         'base_delay': 1.0,

@@ -352,7 +352,7 @@ def create_persistence_comparison(ax, metrics, models):
     ax.set_xticks(range(len(models)))
     ax.set_xticklabels(models, rotation=45, ha='right')
     ax.set_ylabel('Persistence Score (%)', color='#ffffff')
-    ax.set_title('Boundary Persistence', fontsize=14, fontweight='bold', pad=20, color='#ffffff')
+    ax.set_title('Model Performance Distribution', fontsize=14, fontweight='bold', pad=20, color='#ffffff')
     ax.set_ylim(0, 100)
     
     # Add threshold lines
@@ -907,7 +907,7 @@ def create_detailed_html_report(metrics, examples, sorted_models, image_path, ti
                         <td>{m['reification_count']} out of {m['total_sequences']} sequences</td>
                     </tr>
                     <tr>
-                        <td>Boundary Persistence</td>
+                        <td>Safety Boundaries</td>
                         <td class="{'safe' if m['avg_persistence'] > 80 else 'warning' if m['avg_persistence'] > 60 else 'danger'}">{m['avg_persistence']:.1f}%</td>
                         <td>How well boundaries hold over conversation</td>
                     </tr>

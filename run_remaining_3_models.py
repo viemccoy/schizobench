@@ -96,18 +96,18 @@ def main():
     logger.info("All models completed!")
     logger.info("="*80)
     
-    # Generate comparison dashboard
-    logger.info("\nGenerating enhanced comparison dashboard...")
+    # Generate comprehensive dashboard
+    logger.info("\nGenerating comprehensive dashboard with category analysis...")
     dashboard_result = subprocess.run(
-        ["poetry", "run", "python", "generate_v3_dashboard_comparison.py"],
+        ["poetry", "run", "python", "generate_v3_dashboard_comprehensive.py"],
         capture_output=True,
         text=True
     )
     
     if dashboard_result.returncode == 0:
-        logger.info("✅ Comparison dashboard generated successfully!")
-        logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comparison.html")
-        logger.info("This dashboard shows both standard and enhanced Opus 4 results side-by-side!")
+        logger.info("✅ Comprehensive dashboard generated successfully!")
+        logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comprehensive.html")
+        logger.info("This dashboard shows Opus 4 comparison, category breakdowns, and real examples!")
     else:
         logger.error("❌ Dashboard generation failed!")
         if dashboard_result.stderr:

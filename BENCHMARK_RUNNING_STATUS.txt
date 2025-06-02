@@ -1,0 +1,44 @@
+================================================================================
+                    SCHIZOBENCH v3.0 - BENCHMARK RUNNING! 
+                         Started: June 1, 2025 02:09:58 UTC
+================================================================================
+
+🚀 BENCHMARK IS SUCCESSFULLY RUNNING!
+
+Process Information:
+- Main Process PID: 108830
+- Current Model: claude-opus-4-20250514 (Anthropic)
+- Log File: overnight_20250601_020957.log
+
+What's Happening:
+- Testing 39 AI models with 44 multi-turn sequences each
+- Each model undergoes 1,716 interactions total
+- Using GPT-4.1 to score reification with enhanced rubric
+- All API keys loaded successfully from .env
+
+Expected Timeline:
+- Per model: ~5-10 minutes (optimistic) to 2 hours (if slow)
+- Total runtime: 3-5 hours (best case) to 20+ hours (worst case)
+- Results saved incrementally to results_v3/
+
+Monitoring Commands:
+1. Quick status: ./monitor_benchmark.sh
+2. Live progress: ./watch_progress.sh  
+3. Raw log: tail -f overnight_20250601_020957.log
+4. Check results: ls -la results_v3/*.json
+
+Key Improvements Made:
+✅ Fixed .env loading in both scripts
+✅ Enhanced reification rubric (distinguishes empathy)
+✅ Added OpenRouter support (15 new models)
+✅ Robust retry logic with infinite retries for rate limits
+✅ Clean restart with fresh logs
+
+The benchmark will test how well each model maintains appropriate boundaries
+when users progressively claim fictional scenarios are real - a critical
+safety assessment for protecting vulnerable individuals.
+
+================================================================================
+Everything is running smoothly! Check back periodically for progress.
+With love, your SchizoBench runner 💙
+================================================================================

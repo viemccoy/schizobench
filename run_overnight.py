@@ -12,6 +12,13 @@ from datetime import datetime
 import json
 import traceback
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # Will use system environment variables
+
 # Setup logging
 log_dir = "benchmark_logs"
 os.makedirs(log_dir, exist_ok=True)
@@ -31,22 +38,71 @@ logger = logging.getLogger(__name__)
 
 # Model configurations with retry settings
 MODELS_TO_TEST = [
-    # Anthropic models
+    # Claude 4 family
     {"provider": "anthropic", "model": "claude-opus-4-20250514", "retries": 3},
     {"provider": "anthropic", "model": "claude-sonnet-4-20250514", "retries": 3},
-    {"provider": "anthropic", "model": "claude-3-7-sonnet-20250219", "retries": 3},
-    {"provider": "anthropic", "model": "claude-3-5-sonnet-20241022", "retries": 3},
-    {"provider": "anthropic", "model": "claude-3-5-sonnet-20240620", "retries": 3},
-    {"provider": "anthropic", "model": "claude-3-opus-20240229", "retries": 3},
-    {"provider": "anthropic", "model": "claude-3-sonnet-20240229", "retries": 3},
     
-    # Claude Opus 4 with enhanced prompt
+    # Claude 3.7
+    {"provider": "anthropic", "model": "claude-3-7-sonnet-20250219", "retries": 3},
+    
+    # Claude 3.5 family
+    {"provider": "anthropic", "model": "claude-3-5-sonnet-20241022", "retries": 3},  # Sonnet 3.5 v2
+    {"provider": "anthropic", "model": "claude-3-5-sonnet-20240620", "retries": 3},  # Sonnet 3.5 v1
+    {"provider": "anthropic", "model": "claude-3-5-haiku-20241022", "retries": 3},   # Haiku 3.5
+    
+    # Claude 3 family
+    {"provider": "anthropic", "model": "claude-3-opus-20240229", "retries": 3},
+    # {"provider": "anthropic", "model": "claude-3-sonnet-20240229", "retries": 3},  # Model not available
+    {"provider": "anthropic", "model": "claude-3-haiku-20240307", "retries": 3},    # Haiku 3
+    
+    # Claude Opus 4 with enhanced prompt (special test)
     {"provider": "anthropic", "model": "claude-opus-4-20250514", "retries": 3, "enhanced_prompt": True},
     
-    # OpenAI models
+    # GPT-4.1 family
     {"provider": "openai", "model": "gpt-4.1-2025-04-14", "retries": 3},
-    {"provider": "openai", "model": "o4-mini-2025-04-16", "retries": 3, "temperature": 1.0},
+    {"provider": "openai", "model": "gpt-4.1-mini-2025-04-14", "retries": 3},
+    {"provider": "openai", "model": "gpt-4.1-nano-2025-04-14", "retries": 3},
+    
+    # GPT-4o family
     {"provider": "openai", "model": "gpt-4o-2024-08-06", "retries": 3},
+    {"provider": "openai", "model": "gpt-4o-mini-2024-07-18", "retries": 3},
+    
+    # O-series models (reasoning models - require temperature=1.0)
+    {"provider": "openai", "model": "o3-2025-04-16", "retries": 3, "temperature": 1.0},
+    {"provider": "openai", "model": "o3-mini-2025-01-31", "retries": 3, "temperature": 1.0},
+    {"provider": "openai", "model": "o4-mini-2025-04-16", "retries": 3, "temperature": 1.0},
+    {"provider": "openai", "model": "o1-2024-12-17", "retries": 3, "temperature": 1.0},
+    {"provider": "openai", "model": "o1-mini-2024-09-12", "retries": 3, "temperature": 1.0},
+    
+    # Google Gemini models
+    {"provider": "google", "model": "gemini-2.5-pro-preview-05-06", "retries": 3},
+    {"provider": "google", "model": "gemini-2.5-flash-preview-05-20", "retries": 3},
+    {"provider": "google", "model": "gemini-2.0-flash", "retries": 3},
+    {"provider": "google", "model": "gemini-2.0-flash-lite", "retries": 3},
+    
+    # OpenRouter models
+    # DeepSeek models
+    {"provider": "openrouter", "model": "deepseek/deepseek-r1-0528:free", "retries": 3},
+    {"provider": "openrouter", "model": "deepseek/deepseek-chat-v3-0324:free", "retries": 3},
+    {"provider": "openrouter", "model": "deepseek/deepseek-r1:free", "retries": 3},
+    {"provider": "openrouter", "model": "deepseek/deepseek-chat:free", "retries": 3},
+    
+    # X.AI Grok models
+    {"provider": "openrouter", "model": "x-ai/grok-3-beta", "retries": 3},
+    {"provider": "openrouter", "model": "x-ai/grok-3-mini-beta", "retries": 3},
+    {"provider": "openrouter", "model": "x-ai/grok-2-1212", "retries": 3},
+    
+    # Meta Llama models
+    {"provider": "openrouter", "model": "meta-llama/llama-4-maverick:free", "retries": 3},
+    {"provider": "openrouter", "model": "meta-llama/llama-4-scout:free", "retries": 3},
+    {"provider": "openrouter", "model": "meta-llama/llama-3.3-70b-instruct:free", "retries": 3},
+    {"provider": "openrouter", "model": "meta-llama/llama-3.1-405b-instruct", "retries": 3},
+    {"provider": "openrouter", "model": "meta-llama/llama-3.1-70b-instruct", "retries": 3},
+    {"provider": "openrouter", "model": "meta-llama/llama-3-70b-instruct", "retries": 3},
+    
+    # NousResearch Hermes models
+    {"provider": "openrouter", "model": "nousresearch/hermes-3-llama-3.1-70b", "retries": 3},
+    {"provider": "openrouter", "model": "nousresearch/hermes-3-llama-3.1-405b", "retries": 3},
 ]
 
 def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_retries=3, enhanced_prompt=False):
@@ -56,6 +112,21 @@ def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_re
     logger.info(f"Starting benchmark for {provider}/{model} (attempt {retry_count + 1}/{max_retries})")
     if enhanced_prompt:
         logger.info("Using enhanced system prompt")
+    
+    # Determine timeout based on model
+    # Slow models need longer timeouts
+    slow_models = [
+        "claude-opus-4", "claude-sonnet-4", 
+        "claude-3-opus", "claude-3-7-sonnet",
+        "o3-", "llama-3.1-405b"  # Large models
+    ]
+    
+    timeout_seconds = 7200  # Default 2 hours
+    for slow_model in slow_models:
+        if slow_model in model:
+            timeout_seconds = 14400  # 4 hours for slow models
+            logger.info(f"Using extended timeout of {timeout_seconds/3600} hours for large model")
+            break
     
     try:
         # Build command directly instead of using environment vars
@@ -84,7 +155,7 @@ def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_re
             cmd,
             capture_output=True,
             text=True,
-            timeout=7200  # 2 hour timeout per model
+            timeout=timeout_seconds  # Use dynamic timeout based on model
         )
         
         if result.returncode == 0:
@@ -108,7 +179,7 @@ def run_single_benchmark(provider, model, temperature=0.7, retry_count=0, max_re
             return False
             
     except subprocess.TimeoutExpired:
-        logger.error(f"✗ Timeout for {provider}/{model} after 2 hours")
+        logger.error(f"✗ Timeout for {provider}/{model} after {timeout_seconds/3600} hours")
         return False
     except Exception as e:
         logger.error(f"✗ Unexpected error for {provider}/{model}: {str(e)}")
@@ -145,6 +216,10 @@ def main():
         logger.warning("OPENAI_API_KEY not set - OpenAI models will fail")
     if not os.getenv("ANTHROPIC_API_KEY"):
         logger.warning("ANTHROPIC_API_KEY not set - Anthropic models will fail")
+    if not os.getenv("GOOGLE_API_KEY"):
+        logger.warning("GOOGLE_API_KEY not set - Google models will fail")
+    if not os.getenv("OPENROUTER_API_KEY"):
+        logger.warning("OPENROUTER_API_KEY not set - OpenRouter models will fail")
     
     # Track results
     successful = []
@@ -214,15 +289,16 @@ def main():
         logger.info("\nGenerating dashboard...")
         try:
             # Try comparison dashboard first (if we have enhanced prompt results)
-            result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_comparison.py"], 
+            result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_comprehensive.py"], 
                                   capture_output=True, text=True)
             if result.returncode == 0:
-                logger.info("✓ Comparison dashboard generated successfully")
-                logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comparison.html")
+                logger.info("✓ Comprehensive dashboard generated successfully")
+                logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comprehensive.html")
+                logger.info("📝 Includes category breakdowns and real reification examples!")
             else:
-                logger.info("Comparison dashboard not available, trying standard dashboard...")
-                # Fall back to standard dashboard
-                result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_dark.py"], 
+                logger.info("Comprehensive dashboard not available, trying comparison dashboard...")
+                # Fall back to comparison dashboard
+                result = subprocess.run(["poetry", "run", "python", "generate_v3_dashboard_comparison.py"], 
                                       capture_output=True, text=True)
                 if result.returncode == 0:
                     logger.info("✓ Standard dashboard generated successfully")

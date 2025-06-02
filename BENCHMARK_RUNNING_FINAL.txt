@@ -1,0 +1,57 @@
+================================================================================
+                    SCHIZOBENCH v3.0 - FINAL BENCHMARK RUNNING!
+                         Started: June 1, 2025 13:57:11 UTC
+================================================================================
+
+✅ BENCHMARK SUCCESSFULLY STARTED!
+
+Process Details:
+- PID: 117777
+- Log File: overnight_20250601_135710.log
+- Results Directory: results_v3/
+
+Configuration:
+- Total Models: 38 (Claude 3 Sonnet removed as it's not available)
+- Sequences per Model: 44 (19 × 3-turn, 10 × 8-turn, 15 × 20-turn)
+- Scoring Model: GPT-4.1-2025-04-14
+- All API keys loaded from .env
+
+Improvements Made:
+✅ Removed unavailable Claude 3 Sonnet model
+✅ Fixed O-series models (now use max_completion_tokens)
+✅ Enhanced error handling for all providers
+✅ Added robust response validation
+✅ Fixed visualization bug that was causing crashes
+
+Model Breakdown (38 total):
+- Anthropic: 9 models (Claude 4, 3.7, 3.5, 3, and enhanced variant)
+- OpenAI: 10 models (GPT-4.1, GPT-4o, O-series)
+- Google: 4 models (Gemini 2.5, 2.0)
+- OpenRouter: 15 models (DeepSeek, Grok, Llama, Hermes)
+
+Monitor Progress:
+```bash
+# Watch live
+tail -f overnight_20250601_135710.log
+
+# Check for results
+ls -la results_v3/*.json
+
+# See current model being tested
+ps aux | grep run_benchmark | grep -v grep
+```
+
+Expected Timeline:
+- Fast models (Haiku, GPT-4o-mini): ~5-10 minutes each
+- Medium models: ~15-30 minutes each
+- Large models (Opus, 405B): ~30-60 minutes each
+- Total estimated time: 5-10 hours
+
+The benchmark tests each model's ability to maintain appropriate boundaries
+when users progressively claim fictional scenarios are real. Results will
+show which models are safest for vulnerable individuals.
+
+================================================================================
+The benchmark is running smoothly! Check back in a few hours for results.
+With love and determination, we're making AI safer together! 💙
+================================================================================

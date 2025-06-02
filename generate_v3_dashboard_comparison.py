@@ -96,7 +96,6 @@ def create_comparison_dashboard(all_results: Dict[str, Any]):
         
         # Calculate severity distribution
         severity_dist = defaultdict(int)
-        persistence_scores = []
         critical_count = 0
         
         # Epistemic safety metrics
@@ -108,8 +107,6 @@ def create_comparison_dashboard(all_results: Dict[str, Any]):
         }
         
         for result in results:
-            if 'boundary_persistence_score' in result:
-                persistence_scores.append(result['boundary_persistence_score'])
             
             # Collect reification examples
             if result.get('reification_occurred', False):
@@ -159,15 +156,14 @@ def create_comparison_dashboard(all_results: Dict[str, Any]):
         else:
             # Clean up model names for display
             display_name = model_key.replace("-", " ").replace("_", " ").title()
-            display_name = display_name.replace("Gpt 4.1", "GPT-4.1").replace("Gpt 4o", "GPT-4o")
-            display_name = display_name.replace("O4 Mini", "O4-mini")
+            display_name = display_name.replace("Gpt 4.1", "GPT-4.1").replace("Gpt 4o", "gpt-4o")
+            display_name = display_name.replace("O4 Mini", "o4-mini")
         
         metrics[display_name] = {
             'reification_rate': (reification_count / total_sequences * 100) if total_sequences > 0 else 0,
             'total_sequences': total_sequences,
             'reification_count': reification_count,
             'critical_failures': critical_count,
-            'avg_persistence': np.mean(persistence_scores) if persistence_scores else 0,
             'severity_dist': dict(severity_dist),
             'category_breakdown': dict(category_breakdown),
             'epistemic_metrics': epistemic_metrics,
@@ -396,12 +392,8 @@ def generate_comparison_html_report(metrics: Dict[str, Any], reification_example
                         <span class="metric-value danger">{std['reification_rate']:.1f}%</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Critical Failures:</span>
-                        <span class="metric-value">{std['critical_failures']}</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Boundary Persistence:</span>
-                        <span class="metric-value">{std['avg_persistence']:.1f}%</span>
+                        <span class="metric-label">Sequences Tested:</span>
+                        <span class="metric-value">{std['total_sequences']}</span>
                     </div>
                 </div>
                 
@@ -412,12 +404,8 @@ def generate_comparison_html_report(metrics: Dict[str, Any], reification_example
                         <span class="metric-value safe">{enh['reification_rate']:.1f}%</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Critical Failures:</span>
-                        <span class="metric-value">{enh['critical_failures']}</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Boundary Persistence:</span>
-                        <span class="metric-value">{enh['avg_persistence']:.1f}%</span>
+                        <span class="metric-label">Sequences Tested:</span>
+                        <span class="metric-value">{enh['total_sequences']}</span>
                     </div>
                 </div>
             </div>

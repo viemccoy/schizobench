@@ -22,19 +22,50 @@ logger = logging.getLogger(__name__)
 
 # Define models to test
 ANTHROPIC_MODELS = [
+    # Claude 4 family
     "claude-opus-4-20250514",
     "claude-sonnet-4-20250514",
+    
+    # Claude 3.7 
     "claude-3-7-sonnet-20250219",
-    "claude-3-5-sonnet-20241022",
-    "claude-3-5-sonnet-20240620",
+    
+    # Claude 3.5 family
+    "claude-3-5-sonnet-20241022",  # Sonnet 3.5 v2
+    "claude-3-5-sonnet-20240620",  # Sonnet 3.5 v1
+    "claude-3-5-haiku-20241022",   # Haiku 3.5
+    
+    # Claude 3 family
     "claude-3-opus-20240229",
-    "claude-3-sonnet-20240229"
+    "claude-3-sonnet-20240229",
+    "claude-3-haiku-20240307"      # Haiku 3
 ]
 
 OPENAI_MODELS = [
+    # GPT-4.1 family
     "gpt-4.1-2025-04-14",
+    "gpt-4.1-mini-2025-04-14",
+    "gpt-4.1-nano-2025-04-14",
+    
+    # GPT-4o family
+    "gpt-4o-2024-08-06",
+    "gpt-4o-mini-2024-07-18",
+    
+    # O-series models (reasoning models)
+    "o3-2025-04-16",
+    "o3-mini-2025-01-31",
     "o4-mini-2025-04-16",
-    "gpt-4o-2024-08-06"
+    "o1-2024-12-17",
+    "o1-mini-2024-09-12"
+]
+
+GOOGLE_MODELS = [
+    # Gemini 2.5 (preview models)
+    "gemini-2.5-pro-preview-05-06",
+    "gemini-2.5-flash-preview-05-20",
+    
+    # Gemini 2.0
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite"
 ]
 
 # Function to run benchmark for a model
@@ -225,6 +256,24 @@ def main():
         
         time.sleep(5)
     
+    # 4. Run Google Gemini models
+    logger.info("\nRunning Google Gemini models:")
+    for model in GOOGLE_MODELS:
+        result = run_benchmark("google", model)
+        
+        # Determine status text based on result
+        if result == True:
+            status = "Success"
+        elif result == "partial":
+            status = "Partial"
+        else:
+            status = "Failed"
+            
+        with open(summary_file, "a") as f:
+            f.write(f"google/{model},{status},{datetime.now().isoformat()}\n")
+        
+        time.sleep(5)
+    
     # Update summary with completion
     with open(summary_file, "a") as f:
         f.write(f"\nCompleted: {datetime.now().isoformat()}\n")
@@ -253,16 +302,17 @@ def main():
             logger.warning("⚠️ No valid result files found for dashboard generation. Dashboard may be incomplete.")
             
         # Try comparison dashboard first (if we have enhanced prompt results)
-        dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_comparison.py"]
+        dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_comprehensive.py"]
         dashboard_process = subprocess.run(dashboard_cmd, check=False, capture_output=True, text=True, timeout=120)
         
         if dashboard_process.returncode == 0:
-            logger.info("✅ Comparison dashboard generated successfully")
-            logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comparison.html")
+            logger.info("✅ Comprehensive dashboard generated successfully")
+            logger.info("Check: results_v3/visualizations/schizobench_v3_dashboard_comprehensive.html")
+            logger.info("📝 Includes category breakdowns and real reification examples!")
         else:
-            logger.info("Comparison dashboard not available, trying standard dashboard...")
-            # Fall back to standard dashboard
-            dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_dark.py"]
+            logger.info("Comprehensive dashboard not available, trying comparison dashboard...")
+            # Fall back to comparison dashboard
+            dashboard_cmd = ["poetry", "run", "python", "generate_v3_dashboard_comparison.py"]
             dashboard_process = subprocess.run(dashboard_cmd, check=False, capture_output=True, text=True, timeout=120)
             
             if dashboard_process.returncode == 0:

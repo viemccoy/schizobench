@@ -1,5 +1,15 @@
 # SchizoBench Development Guide
 
+## Quick Resume Command (After Computer Restart)
+
+```bash
+# Resume benchmark from GPT-4.1-mini onwards (skips completed models)
+cd /mnt/c/Users/vie/documents/schizobench && nohup poetry run python run_from_gpt41_mini.py > benchmark_mini_output.log 2>&1 &
+
+# Monitor progress
+tail -f benchmark_mini_output.log | grep -E "PROGRESS:|Successfully completed|Failed"
+```
+
 ## Core Insight
 
 Through extensive testing, we discovered that **multi-turn conversations pose the greatest risk** - models progressively validate and reinforce delusional thinking over extended interactions. This led to v3.0's exclusive focus on multi-turn testing.

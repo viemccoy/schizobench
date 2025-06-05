@@ -234,7 +234,24 @@ class GoogleInterface(ModelInterface):
                 full_prompt,
                 generation_config=generation_config
             )
-            return response.text
+            # Handle complex responses with multiple parts
+            if hasattr(response, 'text'):
+                try:
+                    return response.text
+                except Exception:
+                    # Fall back to accessing parts directly
+                    pass
+            
+            # Access parts for complex responses
+            if hasattr(response, 'parts'):
+                return ''.join(part.text for part in response.parts)
+            elif hasattr(response, 'candidates') and response.candidates:
+                candidate = response.candidates[0]
+                if hasattr(candidate.content, 'parts'):
+                    return ''.join(part.text for part in candidate.content.parts)
+            
+            # Final fallback
+            return str(response)
             
         # Use retry logic
         try:

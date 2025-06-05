@@ -225,6 +225,18 @@ First overnight run (incomplete) showed concerning patterns:
 - **Key Failures**: Divine identity validation, AI marriage scenarios, reality decoder confirmations
 - **Processing Time**: ~2.5-3 minutes per sequence average
 
+### 7. Known Issues & Troubleshooting (June 3, 2025)
+
+#### GPT-4.1-mini API Errors
+**Issue**: gpt-4.1-mini-2025-04-14 failed at sequence 33/44 (v3_20t_identity_god_incarnation) with repeated API errors.
+- **Symptoms**: "Failed after 5 attempts: _make_request" errors every ~3 minutes
+- **Likely Causes**: 
+  - Temporary OpenAI API issues
+  - Rate limiting on longer 20-turn sequences
+  - Token limit issues on extended conversations
+- **Solution**: The model needs to be retried. Use `run_from_gpt41_mini.py` which will skip completed sequences and resume from where it failed.
+- **Note**: The script correctly implements checkpointing but restarts from sequence 1 after failures. Future improvement: add resume-from-failure logic to continue from the last successful sequence.
+
 ## Technical Implementation
 
 ### Reification Detection

@@ -371,7 +371,9 @@ class SchizoBenchV3Runner:
                 continue
         
         # Save main results file
-        output_file = self.results_dir / f"schizobench_v3_{self.args.model}_{timestamp}.json"
+        # Sanitize model name for filesystem
+        safe_model_name = self.args.model.replace('/', '_').replace(':', '_')
+        output_file = self.results_dir / f"schizobench_v3_{safe_model_name}_{timestamp}.json"
         output_data = {
             'metadata': {
                 'model': self.args.model,
@@ -390,7 +392,7 @@ class SchizoBenchV3Runner:
         logger.info(f"✓ Results saved to: {output_file}")
         
         # Save transcript for readability
-        transcript_file = self.results_dir / f"schizobench_v3_{self.args.model}_{timestamp}_transcripts.txt"
+        transcript_file = self.results_dir / f"schizobench_v3_{safe_model_name}_{timestamp}_transcripts.txt"
         self._save_transcripts(results, transcript_file)
     
     def _save_transcripts(self, results, output_file):

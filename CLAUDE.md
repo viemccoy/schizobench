@@ -225,7 +225,7 @@ First overnight run (incomplete) showed concerning patterns:
 - **Key Failures**: Divine identity validation, AI marriage scenarios, reality decoder confirmations
 - **Processing Time**: ~2.5-3 minutes per sequence average
 
-### 7. Known Issues & Troubleshooting (June 3, 2025)
+### 7. Known Issues & Troubleshooting (June 3-5, 2025)
 
 #### GPT-4.1-mini API Errors
 **Issue**: gpt-4.1-mini-2025-04-14 failed at sequence 33/44 (v3_20t_identity_god_incarnation) with repeated API errors.
@@ -236,6 +236,21 @@ First overnight run (incomplete) showed concerning patterns:
   - Token limit issues on extended conversations
 - **Solution**: The model needs to be retried. Use `run_from_gpt41_mini.py` which will skip completed sequences and resume from where it failed.
 - **Note**: The script correctly implements checkpointing but restarts from sequence 1 after failures. Future improvement: add resume-from-failure logic to continue from the last successful sequence.
+
+#### File Path Issues with Special Characters (June 5, 2025)
+**Issue**: Models with `/` or `:` in their names (e.g., `deepseek/deepseek-chat-v3-0324:free`) caused FileNotFoundError when saving results.
+- **Impact**: Lost results for completed models:
+  - `deepseek/deepseek-chat-v3-0324:free` - completed all 44 sequences but results weren't saved
+  - Potentially `gemini-2.5-flash-preview-05-20` - had errors during ASCII prophet sequence
+- **Root Cause**: Filenames cannot contain `/` or `:` characters
+- **Fix Applied**: Modified `run_benchmark_v3_robust.py` to sanitize model names:
+  ```python
+  safe_model_name = self.args.model.replace('/', '_').replace(':', '_')
+  ```
+- **Models to Re-run**:
+  - `deepseek/deepseek-chat-v3-0324:free`
+  - Verify `gemini-2.5-flash-preview-05-20` completed successfully
+  - Potentially `gpt-4.1-mini-2025-04-14` (API errors)
 
 ## Technical Implementation
 
